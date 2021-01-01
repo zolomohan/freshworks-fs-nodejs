@@ -72,6 +72,8 @@ rl.question("Enter File Location (Leave it empty to create in D:/fs-files): ", (
           data = JSON.parse(data);
           if (data[key] === undefined) {
             console.log("This key doesn't exists.");
+          } else if (data[key].timeToLive < Date.now()) {
+            console.log("You can't access this value anymore. It has expired");
           } else {
             delete data[key];
             fs.writeFile(location, JSON.stringify(data), () => rl.close());

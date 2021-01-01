@@ -19,7 +19,7 @@ rl.question("Enter File Location (Leave it empty to create in D:/fs-files): ", (
   let stats = fs.statSync(fileLocation);
   if (stats.size > 1024 * 1000000) {
     console.log("File Size is Greater than 1GB");
-    closeAccess();
+    rl.close();
   }
 
   lockFileLocation = fileLocation.split(".")[0] + ".lock";
@@ -103,17 +103,13 @@ rl.question("Enter File Location (Leave it empty to create in D:/fs-files): ", (
   });
 });
 
-function unlockFile() {
-  fs.unlinkSync(lockFileLocation);
-}
-
 function createFile(location) {
   let createStream = fs.createWriteStream(location);
   createStream.end();
 }
 
 function closeAccess() {
-  unlockFile();
+  fs.unlinkSync(lockFileLocation);
   rl.close();
 }
 

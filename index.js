@@ -31,6 +31,11 @@ rl.question("Enter File Location (Leave it empty to create in D:/fs-files): ", (
 
     if (option === 1) {
       rl.question("Enter Key: ", (key) => {
+        if (key.length > 32) {
+          console.log("Key Must be below 32 Characters");
+          closeAccess();
+        }
+
         rl.question("Enter Value: ", (value) => {
           rl.question("Enter Time to Live in Seconds: (Optional) ", (time) => {
             time = time === "" ? null : Date.now() + time * 1000;

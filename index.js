@@ -19,9 +19,6 @@ async function main() {
 
     // If fs-files directory doesn't exist, create the directory.
     if (!fs.existsSync("D:/fs-files")) fs.mkdirSync("D:/fs-files");
-
-    // Create the new file.
-    createFile(fileLocation);
   }
 
   // Create file if it does not exist
@@ -47,7 +44,7 @@ async function main() {
   // This part of the code will only be reached if the file can be accessed.
   // Create a lock file to prevent other processes to access this file.
   createFile(lockFileLocation);
-  
+
   let option = await input("1. Create\n2. Read\n3. Delete\n\nEnter Option: ");
   option = parseInt(option);
 
@@ -78,60 +75,55 @@ async function main() {
     // If time to live is given, get current timestamp and the seconds to it.
     time = !time ? null : Date.now() + time * 1000;
 
-    fs.readFile(fileLocation, "utf8", (err, data) => {
-      let writeData = {};
+    const data = fs.readFileSync(fileLocation, "utf8");
+    let writeData = {};
 
-      // If file empty or non-existent
-      if (data === undefined || !data) {
-        writeData[key] = { timeToLive: time, value };
-        fs.writeFile(fileLocation, JSON.stringify(writeData), closeAccess);
+    if (data) {
+      writeData = JSON.parse(data);
+      // If the key already exits, don't overwrite it.
+      if (writeData[key] !== undefined) {
+        console.log("This key already exists.");
+        closeAccess();
         return;
       } else {
-        writeData = JSON.parse(data);
-
-        // If the key already exits, don't overwrite it.
-        if (writeData[key] !== undefined) {
-          console.log("This key already exists.");
-          closeAccess();
-        } else {
-          writeData[key] = value;
-          fs.writeFile(fileLocation, JSON.stringify(writeData), closeAccess);
-        }
-        return;
+        writeData[key] = { value };
       }
-    });
+    } else {
+      // If file empty or non-existent
+      writeData[key] = { timeToLive: time, value };
+    }
+    fs.writeFile(fileLocation, JSON.stringify(writeData), closeAccess);
+    console.log("Key-Value Created");
+    return;
   } else if (option === 2) {
     let key = await input("Enter Key: ");
+    const data = JSON.parse(fs.readFileSync(fileLocation, "utf8"));
 
-    fs.readFile(fileLocation, "utf8", (err, data) => {
-      data = JSON.parse(data);
-      if (data[key] === undefined) {
-        console.log("This key doesn't exist.");
-      } else if (data[key].timeToLive < Date.now()) {
-        // Check current timestamp with Time to Live
-        console.log("You can't access this value anymore. It has expired");
-      } else {
-        console.log("Value:", data[key].value);
-      }
-      closeAccess();
-      return;
-    });
+    if (data[key] === undefined) {
+      console.log("This key doesn't exist.");
+    } else if (data[key].timeToLive < Date.now()) {
+      // Check current timestamp with Time to Live
+      console.log("You can't access this value anymore. It has expired");
+    } else {
+      console.log("Value:", data[key].value);
+    }
+    closeAccess();
+    return;
   } else if (option === 3) {
     let key = await input("Enter Key: ");
+    const data = JSON.parse(fs.readFileSync(fileLocation, "utf8"));
 
-    fs.readFile(fileLocation, "utf8", (err, data) => {
-      data = JSON.parse(data);
-      if (data[key] === undefined) {
-        console.log("This key doesn't exists.");
-      } else if (data[key].timeToLive < Date.now()) {
-        // Check current timestamp with Time to Live
-        console.log("You can't access this value anymore. It has expired");
-      } else {
-        delete data[key];
-        fs.writeFile(fileLocation, JSON.stringify(data), closeAccess);
-      }
-      return;
-    });
+    if (data[key] === undefined) {
+      console.log("This key doesn't exist.");
+    } else if (data[key].timeToLive < Date.now()) {
+      // Check current timestamp with Time to Live
+      console.log("You can't access this value anymore. It has expired");
+    } else {
+      delete data[key];
+      fs.writeFile(fileLocation, JSON.stringify(data), closeAccess);
+      console.log("Key-Value Deleted");
+    }
+    return;
   } else {
     console.log("Invalid Operation");
     rl.close();

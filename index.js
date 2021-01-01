@@ -7,11 +7,11 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
-rl.question("Enter File Location: ", (location) => {
+rl.question("Enter File Location (Leave it empty to create in D:/fs-files): ", (location) => {
   if (location === "") {
-    location = `./files/${uuidv4()}.txt`;
-    if (!fs.existsSync("./files")) {
-      fs.mkdirSync("./files");
+    location = `D:/fs-files/${uuidv4()}.txt`;
+    if (!fs.existsSync("D:/fs-files")) {
+      fs.mkdirSync("D:/fs-files");
     }
     let createStream = fs.createWriteStream(location);
     createStream.end();

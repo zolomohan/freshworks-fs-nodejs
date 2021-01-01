@@ -16,6 +16,12 @@ rl.question("Enter File Location (Leave it empty to create in D:/fs-files): ", (
     createFile(fileLocation);
   }
 
+  let stats = fs.statSync(fileLocation);
+  if (stats.size > 1024 * 1000000) {
+    console.log("File Size is Greater than 1GB");
+    closeAccess();
+  }
+
   lockFileLocation = fileLocation.split(".")[0] + ".lock";
 
   if (fs.existsSync(lockFileLocation)) {

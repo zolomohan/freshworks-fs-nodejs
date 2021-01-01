@@ -10,6 +10,13 @@ const rl = readline.createInterface({
 rl.question("Enter File Location: ", (location) => {
   if (location === "") {
     location = `./files/${uuidv4()}.txt`;
+    if (!fs.existsSync("./files")) {
+      fs.mkdirSync("./files");
+      var createStream = fs.createWriteStream(location);
+      createStream.end();
+    }
+    var createStream = fs.createWriteStream(location);
+    createStream.end();
   }
 
   rl.question("1. Create\n2. Read\n3. Delete\n\nEnter Option: ", (option) => {

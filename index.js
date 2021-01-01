@@ -47,8 +47,8 @@ rl.question("Enter File Location (Leave it empty to create in D:/fs-files): ", (
             value = JSON.parse(value);
           }
 
-          if(value.length * 2 > 16000) {
-            console.log("Value Must be less than 16KB")
+          if (value.length * 2 > 16000) {
+            console.log("Value Must be less than 16KB");
             closeAccess();
           }
 
@@ -108,6 +108,7 @@ rl.question("Enter File Location (Leave it empty to create in D:/fs-files): ", (
       });
     } else {
       console.log("Invalid Operation");
+      rl.close();
     }
   });
 });

@@ -12,10 +12,8 @@ rl.question("Enter File Location: ", (location) => {
     location = `./files/${uuidv4()}.txt`;
     if (!fs.existsSync("./files")) {
       fs.mkdirSync("./files");
-      var createStream = fs.createWriteStream(location);
-      createStream.end();
     }
-    var createStream = fs.createWriteStream(location);
+    let createStream = fs.createWriteStream(location);
     createStream.end();
   }
 

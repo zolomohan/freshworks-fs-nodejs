@@ -7,6 +7,9 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
+const processID = uuidv4();
+let lockFileLocation = null;
+
 rl.question("Enter File Location (Leave it empty to create in D:/fs-files): ", (location) => {
   if (location === "") {
     location = `D:/fs-files/${uuidv4()}.txt`;
@@ -16,6 +19,12 @@ rl.question("Enter File Location (Leave it empty to create in D:/fs-files): ", (
     let createStream = fs.createWriteStream(location);
     createStream.end();
   }
+
+  // Lock File
+  lockFileLocation = location.split(".")[0] + ".lock";
+  let createStream = fs.createWriteStream(lockFileLocation);
+  createStream.write(JSON.stringify({ process: processID }));
+  createStream.end();
 
   rl.question("1. Create\n2. Read\n3. Delete\n\nEnter Option: ", (option) => {
     option = parseInt(option);
@@ -87,4 +96,7 @@ rl.question("Enter File Location (Leave it empty to create in D:/fs-files): ", (
   });
 });
 
-rl.on("close", () => process.exit(0));
+rl.on("close", () => {
+  fs.unlinkSync(lockFileLocation);
+  process.exit(0);
+});

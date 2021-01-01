@@ -23,24 +23,31 @@ rl.question("Enter File Location (Leave it empty to create in D:/fs-files): ", (
     if (option === 1) {
       rl.question("Enter Key: ", (key) => {
         rl.question("Enter Value: ", (value) => {
-          fs.readFile(location, "utf8", (err, data) => {
-            let writeData = {};
-            if (data === undefined || data === "") {
-              writeData[key] = value;
-              fs.writeFile(location, JSON.stringify(writeData), () => rl.close());
-              return;
+          rl.question("Enter Time to Live in Seconds: (Optional) ", (time) => {
+            if (time === "") {
+              time = null;
             } else {
-              writeData = JSON.parse(data);
-              if (writeData[key] !== undefined) {
-                console.log("This key already exists.");
-                rl.close();
-              } else {
-                writeData[key] = value;
-                console.log(writeData);
-                fs.writeFile(location, JSON.stringify(writeData), () => rl.close());
-              }
-              return;
+              time = Date.now() + time * 1000;
             }
+            fs.readFile(location, "utf8", (err, data) => {
+              let writeData = {};
+              if (data === undefined || data === "") {
+                writeData[key] = { timeToLive: time, value };
+                fs.writeFile(location, JSON.stringify(writeData), () => rl.close());
+                return;
+              } else {
+                writeData = JSON.parse(data);
+                if (writeData[key] !== undefined) {
+                  console.log("This key already exists.");
+                  rl.close();
+                } else {
+                  writeData[key] = value;
+                  console.log(writeData);
+                  fs.writeFile(location, JSON.stringify(writeData), () => rl.close());
+                }
+                return;
+              }
+            });
           });
         });
       });
@@ -50,8 +57,10 @@ rl.question("Enter File Location (Leave it empty to create in D:/fs-files): ", (
           data = JSON.parse(data);
           if (data[key] === undefined) {
             console.log("This key doesn't exist.");
+          } else if (data[key].timeToLive < Date.now()) {
+            console.log("You can't access this value anymore. It has expired");
           } else {
-            console.log("Value:", data[key]);
+            console.log("Value:", data[key].value);
           }
           rl.close();
           return;

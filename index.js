@@ -47,7 +47,10 @@ rl.question("Enter File Location (Leave it empty to create in D:/fs-files): ", (
             value = JSON.parse(value);
           }
 
-          console.log(new TextEncoder().encode(value).length);
+          if(value.length * 2 > 16000) {
+            console.log("Value Must be less than 16KB")
+            closeAccess();
+          }
 
           rl.question("Enter Time to Live in Seconds: (Optional) ", (time) => {
             time = time === "" ? null : Date.now() + time * 1000;

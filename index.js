@@ -22,8 +22,13 @@ rl.question("Enter File Location (Leave it empty to create in D:/fs-files): ", (
 
   // Lock File
   lockFileLocation = location.split(".")[0] + ".lock";
+
+  if (fs.existsSync(lockFileLocation)) {
+    console.log("This file is being used by another process.");
+    return;
+  }
+
   let createStream = fs.createWriteStream(lockFileLocation);
-  createStream.write(JSON.stringify({ process: processID }));
   createStream.end();
 
   rl.question("1. Create\n2. Read\n3. Delete\n\nEnter Option: ", (option) => {

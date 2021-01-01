@@ -43,6 +43,8 @@ rl.question("Enter File Location (Leave it empty to create in D:/fs-files): ", (
         }
 
         rl.question("Enter Value: ", (value) => {
+          value = JSON.parse(value);
+
           rl.question("Enter Time to Live in Seconds: (Optional) ", (time) => {
             time = time === "" ? null : Date.now() + time * 1000;
 

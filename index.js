@@ -19,11 +19,11 @@ rl.question("Enter File Location (Leave it empty to create in D:/fs-files): ", (
     createStream.end();
   }
 
-  // Lock File
   lockFileLocation = location.split(".")[0] + ".lock";
 
   if (fs.existsSync(lockFileLocation)) {
     console.log("This file is being used by another process.");
+    rl.close();
     return;
   }
 

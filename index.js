@@ -9,17 +9,14 @@ const rl = readline.createInterface({
 
 let lockFileLocation = null;
 
-rl.question("Enter File Location (Leave it empty to create in D:/fs-files): ", (location) => {
-  if (location === "") {
-    location = `D:/fs-files/${uuidv4()}.txt`;
-    if (!fs.existsSync("D:/fs-files")) {
-      fs.mkdirSync("D:/fs-files");
-    }
-    let createStream = fs.createWriteStream(location);
-    createStream.end();
+rl.question("Enter File Location (Leave it empty to create in D:/fs-files): ", (fileLocation) => {
+  if (!fileLocation) {
+    fileLocation = `D:/fs-files/${uuidv4()}.txt`;
+    if (!fs.existsSync("D:/fs-files")) fs.mkdirSync("D:/fs-files");
+    createFile(fileLocation);
   }
 
-  lockFileLocation = location.split(".")[0] + ".lock";
+  lockFileLocation = fileLocation.split(".")[0] + ".lock";
 
   if (fs.existsSync(lockFileLocation)) {
     console.log("This file is being used by another process.");
@@ -27,8 +24,7 @@ rl.question("Enter File Location (Leave it empty to create in D:/fs-files): ", (
     return;
   }
 
-  let createStream = fs.createWriteStream(lockFileLocation);
-  createStream.end();
+  createFile(lockFileLocation);
 
   rl.question("1. Create\n2. Read\n3. Delete\n\nEnter Option: ", (option) => {
     option = parseInt(option);
@@ -37,33 +33,22 @@ rl.question("Enter File Location (Leave it empty to create in D:/fs-files): ", (
       rl.question("Enter Key: ", (key) => {
         rl.question("Enter Value: ", (value) => {
           rl.question("Enter Time to Live in Seconds: (Optional) ", (time) => {
-            if (time === "") {
-              time = null;
-            } else {
-              time = Date.now() + time * 1000;
-            }
-            fs.readFile(location, "utf8", (err, data) => {
+            time = time === "" ? null : Date.now() + time * 1000;
+
+            fs.readFile(fileLocation, "utf8", (err, data) => {
               let writeData = {};
               if (data === undefined || data === "") {
                 writeData[key] = { timeToLive: time, value };
-                fs.writeFile(location, JSON.stringify(writeData), () => {
-                  unlockFile();
-                  rl.close();
-                });
+                fs.writeFile(fileLocation, JSON.stringify(writeData), closeAccess);
                 return;
               } else {
                 writeData = JSON.parse(data);
                 if (writeData[key] !== undefined) {
                   console.log("This key already exists.");
-                  unlockFile();
-                  rl.close();
+                  closeAccess();
                 } else {
                   writeData[key] = value;
-                  console.log(writeData);
-                  fs.writeFile(location, JSON.stringify(writeData), () => {
-                    unlockFile();
-                    rl.close();
-                  });
+                  fs.writeFile(fileLocation, JSON.stringify(writeData), closeAccess);
                 }
                 return;
               }
@@ -73,7 +58,7 @@ rl.question("Enter File Location (Leave it empty to create in D:/fs-files): ", (
       });
     } else if (option === 2) {
       rl.question("Enter Key: ", (key) => {
-        fs.readFile(location, "utf8", (err, data) => {
+        fs.readFile(fileLocation, "utf8", (err, data) => {
           data = JSON.parse(data);
           if (data[key] === undefined) {
             console.log("This key doesn't exist.");
@@ -82,14 +67,13 @@ rl.question("Enter File Location (Leave it empty to create in D:/fs-files): ", (
           } else {
             console.log("Value:", data[key].value);
           }
-          unlockFile();
-          rl.close();
+          closeAccess();
           return;
         });
       });
     } else if (option === 3) {
       rl.question("Enter Key: ", (key) => {
-        fs.readFile(location, "utf8", (err, data) => {
+        fs.readFile(fileLocation, "utf8", (err, data) => {
           data = JSON.parse(data);
           if (data[key] === undefined) {
             console.log("This key doesn't exists.");
@@ -97,10 +81,7 @@ rl.question("Enter File Location (Leave it empty to create in D:/fs-files): ", (
             console.log("You can't access this value anymore. It has expired");
           } else {
             delete data[key];
-            fs.writeFile(location, JSON.stringify(data), () => {
-              unlockFile();
-              rl.close();
-            });
+            fs.writeFile(fileLocation, JSON.stringify(data), closeAccess);
           }
           return;
         });
@@ -113,6 +94,16 @@ rl.question("Enter File Location (Leave it empty to create in D:/fs-files): ", (
 
 function unlockFile() {
   fs.unlinkSync(lockFileLocation);
+}
+
+function createFile(location) {
+  let createStream = fs.createWriteStream(location);
+  createStream.end();
+}
+
+function closeAccess() {
+  unlockFile();
+  rl.close();
 }
 
 rl.on("close", () => {

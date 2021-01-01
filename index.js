@@ -7,7 +7,6 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
-const processID = uuidv4();
 let lockFileLocation = null;
 
 rl.question("Enter File Location (Leave it empty to create in D:/fs-files): ", (location) => {
@@ -47,17 +46,24 @@ rl.question("Enter File Location (Leave it empty to create in D:/fs-files): ", (
               let writeData = {};
               if (data === undefined || data === "") {
                 writeData[key] = { timeToLive: time, value };
-                fs.writeFile(location, JSON.stringify(writeData), () => rl.close());
+                fs.writeFile(location, JSON.stringify(writeData), () => {
+                  unlockFile();
+                  rl.close();
+                });
                 return;
               } else {
                 writeData = JSON.parse(data);
                 if (writeData[key] !== undefined) {
                   console.log("This key already exists.");
+                  unlockFile();
                   rl.close();
                 } else {
                   writeData[key] = value;
                   console.log(writeData);
-                  fs.writeFile(location, JSON.stringify(writeData), () => rl.close());
+                  fs.writeFile(location, JSON.stringify(writeData), () => {
+                    unlockFile();
+                    rl.close();
+                  });
                 }
                 return;
               }
@@ -76,6 +82,7 @@ rl.question("Enter File Location (Leave it empty to create in D:/fs-files): ", (
           } else {
             console.log("Value:", data[key].value);
           }
+          unlockFile();
           rl.close();
           return;
         });
@@ -90,7 +97,10 @@ rl.question("Enter File Location (Leave it empty to create in D:/fs-files): ", (
             console.log("You can't access this value anymore. It has expired");
           } else {
             delete data[key];
-            fs.writeFile(location, JSON.stringify(data), () => rl.close());
+            fs.writeFile(location, JSON.stringify(data), () => {
+              unlockFile();
+              rl.close();
+            });
           }
           return;
         });
@@ -101,7 +111,10 @@ rl.question("Enter File Location (Leave it empty to create in D:/fs-files): ", (
   });
 });
 
-rl.on("close", () => {
+function unlockFile() {
   fs.unlinkSync(lockFileLocation);
+}
+
+rl.on("close", () => {
   process.exit(0);
 });

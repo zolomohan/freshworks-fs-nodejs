@@ -37,14 +37,17 @@ async function main() {
 
   // Check for a lock file, if exists, stop process.
   if (fs.existsSync(lockFileLocation)) {
-    console.log("This file is being used by another process.");
-    rl.close();
-    return;
+    if (fs.readFileSync(lockFileLocation).processID !== processID) {
+      console.log("This file is being used by another process.");
+      rl.close();
+      return;
+    } else {
+      console.log("Multi-thread");
+    }
+  } else {
+    // Create a lock file to prevent other processes to access this file.
+    createFile(lockFileLocation, JSON.stringify({ processID }));
   }
-
-  // This part of the code will only be reached if the file can be accessed.
-  // Create a lock file to prevent other processes to access this file.
-  createFile(lockFileLocation, JSON.stringify({ processID }));
 
   let option = await input("1. Create\n2. Read\n3. Delete\n\nEnter Option: ");
   option = parseInt(option);

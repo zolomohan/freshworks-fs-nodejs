@@ -37,6 +37,8 @@ async function main() {
 
   // Check for a lock file, if exists, stop process.
   if (fs.existsSync(lockFileLocation)) {
+
+    // Check for Process ID in that Lock File for Multi-Threading. If it's a different process, don't allow.
     if (fs.readFileSync(lockFileLocation).processID !== processID) {
       console.log("This file is being used by another process.");
       rl.close();

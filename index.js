@@ -7,6 +7,7 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
+let processID = uuidv4();
 let lockFileLocation = null;
 
 async function main() {
@@ -43,7 +44,7 @@ async function main() {
 
   // This part of the code will only be reached if the file can be accessed.
   // Create a lock file to prevent other processes to access this file.
-  createFile(lockFileLocation);
+  createFile(lockFileLocation, JSON.stringify({ processID }));
 
   let option = await input("1. Create\n2. Read\n3. Delete\n\nEnter Option: ");
   option = parseInt(option);
@@ -137,8 +138,9 @@ async function input(prompt) {
 }
 
 // Function to create a file.
-function createFile(location) {
+function createFile(location, content) {
   let createStream = fs.createWriteStream(location);
+  if (content) createStream.write(content);
   createStream.end();
 }
 
